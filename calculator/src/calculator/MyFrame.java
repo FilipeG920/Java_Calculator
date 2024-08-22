@@ -2,6 +2,8 @@ package calculator;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+
 import javax.swing.*;
 
 public class MyFrame extends JFrame implements ActionListener {
@@ -14,8 +16,11 @@ public class MyFrame extends JFrame implements ActionListener {
 	private JButton decButton, equButton, delButton, clrButton, negButton;
 	private Font myFont = new Font("Roboto", Font.BOLD,20);
 	
-	double num1 = 0, num2 = 0, result = 0;
-	char operator;
+	private ArrayList<String> historico = new ArrayList<String>(); //Stores the results of the operations
+	private JComboBox<String> combobox; //Displays the results of the operations
+	private double num1 = 0, num2 = 0, result = 0;
+	private char operator;
+	private static final int MAX_HISTORY_SIZE = 10;
 	
 	MyFrame(){
 		textField = new JTextField();
@@ -79,22 +84,27 @@ public class MyFrame extends JFrame implements ActionListener {
 		panel.add(numberButtons[0]);
 		panel.add(equButton);
 		panel.add(buttonDIV);
+		
+		String[] arrayHistorico = historico.toArray(new String[historico.size()]); //Transform the ArrayList to a array 
+		combobox =  new JComboBox<String>(arrayHistorico); 
+		combobox.addActionListener(this);
 
 		delButton.setBounds(270, 80, 140, 50);
 		clrButton.setBounds(270, 140, 140, 50);
 		negButton.setBounds(270, 200, 140, 50);
+		combobox.setBounds(270, 260, 140, 25);
 		
 		this.setTitle("Calculator");
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		this.setSize(450,500);
+		this.setSize(450,400);
 		this.setLayout(null);
 		this.add(textField);
 		this.add(delButton);
 		this.add(clrButton);
 		this.add(negButton);
+		this.add(combobox);
 		this.add(panel);
 		this.setVisible(true);
-		//this.setResizable(false);
 	}
 	
 	@Override
@@ -154,6 +164,11 @@ public class MyFrame extends JFrame implements ActionListener {
 			
 			textField.setText(String.valueOf(result));
 			num1 = result;
+			if (historico.size() == MAX_HISTORY_SIZE) {
+				historico.remove(0);
+			}
+		    historico.add(String.valueOf(result));
+		    updateComboBox();
 		}
 		
 		if (e.getSource() == clrButton) {
@@ -173,6 +188,15 @@ public class MyFrame extends JFrame implements ActionListener {
 			temp *= -1;
 			textField.setText(String.valueOf(temp));
 		}
+		
+		if (e.getSource() == combobox) {
+			textField.setText((String) combobox.getSelectedItem());
+		}
 	}
 
+	public void updateComboBox() { // Updates the combobox whenever a new result is acquired.
+		int arraySize = Math.min(historico.size(), MAX_HISTORY_SIZE);
+	    String[] arrayHistorico = historico.toArray(new String[arraySize]);
+	    combobox.setModel(new DefaultComboBoxModel<>(arrayHistorico));
+	}
 }
